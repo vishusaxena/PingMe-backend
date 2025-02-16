@@ -17,18 +17,52 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://ping-me-frontend-yqx4.vercel.app", // Deployed frontend
-    ],
-    credentials: true,
-  })
-);
-app.use(express.json()); // Accept JSON data
+// CORS Configuration
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://ping-me-frontend-yqx4.vercel.app",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true, // Allow credentials like cookies
+};
+
+// Middleware for logging requests (useful for debugging CORS issues)
+app.use((req, res, next) => {
+  console.log(`Incoming request from: ${req.headers.origin}`);
+  next();
+});
+
+// Apply CORS Middleware
+app.use(cors(corsOptions));
+
+// Handle Preflight Requests (OPTIONS)
+app.options("*", cors(corsOptions));
+
+// Middleware to Parse JSON Requests
+app.use(express.json());
+
+// Manually Set Headers (Additional CORS Handling)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 // API Routes
 app.use("/api/user", userRoutes);
@@ -41,11 +75,7 @@ const server = createServer(app);
 // WebSocket Setup
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://ping-me-frontend-yqx4.vercel.app",
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
