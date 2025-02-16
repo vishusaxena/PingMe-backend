@@ -23,7 +23,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "https://ping-me-frontend-yqx4-2lpymxvug-vishu-saxenas-projects.vercel.app", // Deployed frontend
+      "https://ping-me-frontend-yqx4.vercel.app/", // Deployed frontend
     ],
     credentials: true,
   })
@@ -44,7 +44,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "https://ping-me-frontend-yqx4-2lpymxvug-vishu-saxenas-projects.vercel.app",
+      "https://ping-me-frontend-yqx4.vercel.app/",
     ],
     methods: ["GET", "POST"],
     credentials: true,
